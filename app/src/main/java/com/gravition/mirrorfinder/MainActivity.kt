@@ -1,12 +1,13 @@
 package com.gravition.mirrorfinder
 
-import android.app.admin.DevicePolicyManager
 import android.os.Bundle
+import android.os.StrictMode
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,7 +45,6 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.text.googlefonts.isAvailableOnDevice
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.gravition.mirrorfinder.ui.theme.MirrorFinderTheme
 import com.gravition.mirrorfinder.ui.theme.provider
@@ -56,6 +56,11 @@ import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entriesOf
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 
 
 /**
@@ -106,15 +111,20 @@ class MainActivity : ComponentActivity() {
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
 
-                            val windowInsets = WindowCompat.getInsetsController(window,window.decorView)
-                            windowInsets.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                            
+                            val windowInsets =
+                                WindowCompat.getInsetsController(window, window.decorView)
+                            windowInsets.systemBarsBehavior =
+                                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
-                           Box(
-                               contentAlignment = Alignment.Center,
-                               modifier = Modifier.fillMaxSize()){
-                               CanvasDraw()
-                           }
+
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                //CanvasDraw()
+                                //webTextScrapper()
+                                JsopTest()
+                            }
                         }
                     }
                 }
@@ -180,35 +190,70 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CanvasDraw() {
 
-    Row(modifier = Modifier
-       .fillMaxWidth()
-       .height(200.dp)){
-      // Spacer(modifier = Modifier.width(16.dp))
-       //this is also a change
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
+        // Spacer(modifier = Modifier.width(16.dp))
+        //this is also a change
 
 
-
-           Canvas(modifier = Modifier.fillMaxSize(), onDraw = {
-               val height = size.height/3f
-               val width  =  60f
-               // val size = height * width.toDp().toPx()
-               inset(
-                   horizontal = 16f,
-                   vertical = 16f,
-               ){
-                   drawRoundRect(
-                       size = Size(width = width,height = height),
-                       cornerRadius = CornerRadius(24f,24f),
-                       brush = Brush.horizontalGradient(
-                           colors = listOf(
-                               Color.Gray,
-                               Color.Gray
-                           )
-                       )
-                   )
-               }
-           })
-       }
-
+        Canvas(modifier = Modifier.fillMaxSize(), onDraw = {
+            val height = size.height / 3f
+            val width = 60f
+            // val size = height * width.toDp().toPx()
+            inset(
+                horizontal = 16f,
+                vertical = 16f,
+            ) {
+                drawRoundRect(
+                    size = Size(width = width, height = height),
+                    cornerRadius = CornerRadius(24f, 24f),
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Gray,
+                            Color.Gray
+                        )
+                    )
+                )
+            }
+        })
+    }
 }
 
+@Composable
+fun webTextScrapper() {
+    val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+    StrictMode.setThreadPolicy(policy)
+
+
+    var data = "no data"
+    val connection = URL("http://www.google.com").openConnection() as HttpURLConnection
+    try {
+        data = connection.inputStream.bufferedReader().use { it.readText() }
+    } catch (io: IOException) {
+        io.localizedMessage
+    } finally {
+        connection.disconnect()
+
+    }
+
+
+    Text(text = data.toString(), style = MaterialTheme.typography.bodyMedium)
+}
+
+
+@Composable
+fun JsopTest() {
+    val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+    StrictMode.setThreadPolicy(policy)
+
+    val doc = Jsoup.connect("https://en.wikipedia.org/wiki/J._Robert_Oppenheimer").get()
+    val element = doc.selectXpath("//*[@id=\"mw-content-text\"]/div[1]/p[3]")
+    Column(modifier =  Modifier.fillMaxWidth()) {
+        Text(text = doc.title())
+        Text(text = element.text())
+    }
+
+}

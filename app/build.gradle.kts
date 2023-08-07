@@ -101,5 +101,7 @@ dependencies {
 
     // For interop APIs with Material 3
     implementation ("androidx.glance:glance-material3:1.0.0-rc01")
+
+    implementation ("org.jsoup:jsoup:1.16.1")
 }
 
