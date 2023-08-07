@@ -1,5 +1,6 @@
 package com.gravition.mirrorfinder
 
+import android.app.admin.DevicePolicyManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -7,16 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +43,9 @@ import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.text.googlefonts.isAvailableOnDevice
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.gravition.mirrorfinder.ui.theme.MirrorFinderTheme
 import com.gravition.mirrorfinder.ui.theme.provider
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
@@ -56,10 +56,6 @@ import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entriesOf
-import java.io.IOException
-import java.net.InetSocketAddress
-import java.net.Socket
-import java.util.Random
 
 
 /**
@@ -109,6 +105,10 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize(),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
+
+                            val windowInsets = WindowCompat.getInsetsController(window,window.decorView)
+                            windowInsets.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                            
 
                            Box(
                                contentAlignment = Alignment.Center,
@@ -179,7 +179,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CanvasDraw() {
-   Row(modifier = Modifier
+
+    Row(modifier = Modifier
        .fillMaxWidth()
        .height(200.dp)){
       // Spacer(modifier = Modifier.width(16.dp))
@@ -210,3 +211,4 @@ fun CanvasDraw() {
        }
 
 }
+
