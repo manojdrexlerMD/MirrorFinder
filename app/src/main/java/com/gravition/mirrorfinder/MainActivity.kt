@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -254,6 +255,10 @@ fun JsopTest() {
     Column(modifier =  Modifier.fillMaxWidth()) {
         Text(text = doc.title())
         Text(text = element.text())
+        //this os
+        Button(onClick = { /*TODO*/ }) {
+            Text(text = "some")
+        }
     }
 
 }
