@@ -257,8 +257,9 @@ fun JsopTest() {
         Text(text = element.text())
         //this os
         Button(onClick = { /*TODO*/ }) {
-            Text(text = "some")
+            Text(text = "Click mee.......")
         }
     }
+
 
 }
