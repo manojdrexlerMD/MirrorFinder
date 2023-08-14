@@ -1,10 +1,24 @@
 package com.gravition.mirrorfinder
 
+import android.annotation.SuppressLint
+import android.app.WallpaperManager
+import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
+import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +72,6 @@ import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entriesOf
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -69,7 +82,32 @@ import java.net.URL
  * https://fonts.google.com/?query=Impallari+Type
  */
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() ,SensorEventListener{
+
+
+    private lateinit var sensorManger : SensorManager
+    private var pressure : Sensor? = null
+
+
+
+
+
+    private var data : Float   = 0.0F
+
+    private val receiver = object : BroadcastReceiver(){
+        override fun onReceive(ctxt: Context?, intent: Intent?) {
+            val action : String? = intent?.action
+            when(action){
+                BluetoothDevice.ACTION_FOUND -> {
+                    val device : BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+
+                    Log.d("fucker", "onReceive: ${device?.address}")
+                }
+            }
+
+        }
+
+    }
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +116,18 @@ class MainActivity : ComponentActivity() {
                 var dialogState by remember {
                     mutableStateOf(false)
                 }
+
+
+
+                val filter  = IntentFilter(BluetoothDevice.ACTION_FOUND)
+
+
+
+
+
+
+                registerReceiver(receiver,filter)
+
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -124,11 +174,60 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 //CanvasDraw()
                                 //webTextScrapper()
-                                JsopTest()
+
+                                //setWallpaperCompose()
+
+
+
+
+                                Text(text = data.toString())
+
                             }
                         }
                     }
                 }
+            }
+        }
+
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        sensorManger  = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        pressure = sensorManger.getDefaultSensor(Sensor.TYPE_PRESSURE)
+
+        sensorManger.registerListener(this,pressure,SensorManager.SENSOR_DELAY_NORMAL)
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
+        sensorManger.unregisterListener(this)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    @SuppressLint("ResourceType")
+    @Composable
+    fun setWallpaperCompose() {
+        val context = LocalContext.current
+        val wallpaperManager = WallpaperManager.getInstance(context)
+
+        val tm = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+        val carrID = tm.simCarrierId
+        val simOperName = tm.simOperatorName
+       // val s = tm.voiceMailNumber
+
+        Box(modifier = Modifier.fillMaxWidth()){
+            Button(onClick = {
+                try {
+                    wallpaperManager.setResource(R.drawable.wal)
+                }catch (io : IOException){
+                    io.printStackTrace()
+                }
+            }) {
+                Text(text = "Set Wallpaper")
+
             }
         }
     }
@@ -183,6 +282,19 @@ class MainActivity : ComponentActivity() {
             ),
             topAxis = topAxis()
         )
+    }
+
+    override fun onSensorChanged(sensorEvent: SensorEvent?) {
+        val pressureData = sensorEvent?.values?.get(0)
+        if (pressureData != null) {
+            data  = pressureData
+        }else {
+            data = 0.999f
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, p1: Int) {
+
     }
 
 }
@@ -263,6 +375,5 @@ fun JsopTest() {
             Text(text = "Click mee.......")
         }
     }
-
 
 }
